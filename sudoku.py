@@ -21,9 +21,6 @@ class SudokuBoard:
     def get_row(self, r_i):
         return self.board[r_i]
 
-    # def get_row_vars(self, r_i):
-    #     # self.board[r_i]
-
     def get_col(self, c_i):
         return [row[c_i] for row in self.board]
 
@@ -46,20 +43,10 @@ def require_distinct(vars):
 
     expr = False
     for i, var in enumerate(vars):
-        other_vars_negated = z3.And(*[z3.Not(v) for j,v in enumerate(vars) if j != i])
-        expr = z3.Or(expr, z3.And(
-            var, other_vars_negated
-        ))
+        other_vars_negated = z3.And(*[z3.Not(v) for j, v in enumerate(vars) if j != i])
+        expr = z3.Or(expr, z3.And(var, other_vars_negated))
 
     return expr
-
-    # expr = z3.Xor(vars[0], vars[1])
-    # if len(vars) == 2:
-    #     return expr
-
-    # for b in vars[2:]:
-    #     expr = z3.Xor(expr, b)
-    # return expr
 
 
 def one_digit_per_slot_constraint(board: SudokuBoard):
@@ -78,9 +65,7 @@ def row_constraint(board: SudokuBoard):
         # per row, require distinct vals
         for digit in range(1, 10):
             vars = [board.get_var(r_i, c_i, digit) for c_i in range(board.num_cols)]
-            # print(vars)
             expr = z3.And(expr, require_distinct(vars))
-            # print(expr)
 
         # make sure row doesn't contain already set vals
         for c_i in range(board.num_cols):
@@ -88,7 +73,6 @@ def row_constraint(board: SudokuBoard):
             if digit != 0:
                 expr = z3.And(expr, board.get_var(r_i, c_i, digit))
 
-    # print(expr)
     return expr
 
 
@@ -98,7 +82,6 @@ def col_constraint(board: SudokuBoard):
         # per col, require distinct vals
         for digit in range(1, 10):
             vars = [board.get_var(r_i, c_i, digit) for r_i in range(board.num_rows)]
-            # print(vars)
             expr = z3.And(expr, require_distinct(vars))
 
         # make sure row doesn't contain already set vals
@@ -127,6 +110,7 @@ def square_constraint(board: SudokuBoard):
 
 if __name__ == "__main__":
 
+    # NYT easy sudoku from Feb 23, 2024
     board_contents = [
         [4, 7, 0, 0, 6, 0, 0, 0, 0],
         [3, 0, 0, 4, 9, 7, 0, 8, 0],
@@ -147,26 +131,18 @@ if __name__ == "__main__":
     solver.add(col_constraint(board))
     solver.add(square_constraint(board))
 
-    # solver.add(z3.And(
-    #     one_digit_per_slot_constraint(board),
-    #     row_constraint(board),
-    #     col_constraint(board),
-    #     square_constraint(board)
+    check = solver.check()
+    if check == z3.sat:
+        # we succeeded! -- print solution
+        model = solver.model()
 
-    # ))
-
-    print(solver.check())
-    model = solver.model()
-    # print(model)
-
-    solution_board = [ [0] * 9 for _ in range(9)]
-    for key in model:
-        if model[key]:
-            # print(key)
-            (r, c, digit) = str(key).split("_")
-            r = int(r)
-            c = int(c)
-            digit = int(digit)
-            solution_board[r][c] = digit
-    for row in solution_board:
-        print(row)
+        solution_board = [[0] * 9 for _ in range(9)]
+        for key in model:
+            if model[key]:
+                (r, c, digit) = str(key).split("_")
+                r = int(r)
+                c = int(c)
+                digit = int(digit)
+                solution_board[r][c] = digit
+        for row in solution_board:
+            print(row)
