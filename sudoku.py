@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import z3
 
 
@@ -123,7 +125,20 @@ if __name__ == "__main__":
         [9, 0, 3, 0, 5, 6, 0, 0, 0],
     ]
 
-    board = SudokuBoard(board_contents)
+    # NYT hard sudoku from Feb 23, 2024
+    board_contents_hard = [
+        [0, 0, 7, 0, 0, 0, 0, 3, 0],
+        [0, 0, 0, 0, 0, 5, 7, 0, 0],
+        [5, 2, 1, 0, 0, 3, 0, 0, 0],
+        [3, 0, 0, 0, 0, 9, 0, 0, 8],
+        [4, 0, 0, 0, 0, 1, 3, 0, 0],
+        [0, 9, 0, 0, 5, 0, 0, 4, 0],
+        [0, 0, 0, 9, 0, 4, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 6, 2],
+        [9, 5, 0, 7, 0, 0, 0, 0, 0],
+    ]
+
+    board = SudokuBoard(board_contents_hard)
 
     solver = z3.Solver()
     solver.add(one_digit_per_slot_constraint(board))
